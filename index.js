@@ -31,33 +31,52 @@ async function run() {
 
     const jobCollection = client.db('jobDB').collection('allJobs');
 
-    app.post('/allJobs', async(req, res)=>{
-        const newJob = req.body;
-        console.log(newJob);
-        const result = await jobCollection.insertOne(newJob);
-        res.send(result);
+    app.post('/allJobs', async (req, res) => {
+      const newJob = req.body;
+      console.log(newJob);
+      const result = await jobCollection.insertOne(newJob);
+      res.send(result);
     })
 
-    app.get('/allJobs', async(req, res)=>{
-        const cursor = jobCollection.find();
-        const result = await cursor.toArray();
-        res.send(result);
+    app.get('/allJobs', async (req, res) => {
+      const cursor = jobCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
     })
 
-    app.delete('/allJobs/:id', async(req, res) =>{
+    app.delete('/allJobs/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await jobCollection.deleteOne(query);
-       res.send(result);
+      res.send(result);
     })
 
-    app.get('/allJobs/:id', async(req, res) =>{
+    app.get('/allJobs/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await jobCollection.findOne(query);
-       res.send(result);
+      res.send(result);
     })
 
+    app.put('/allJobs/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedJob = req.body;
+      const job = {
+        $set: {
+          username: updatedJob.username,
+          title: updatedJob.title,
+          work_type: updatedJob.work_type,
+          salary_range: updatedJob.salary_range,
+          posting_date: updatedJob.posting_date,
+          deadline: updatedJob.deadline,
+          applicant_number: updatedJob.applicant_number,
+          photo: updatedJob.photo,
+          description: updatedJob.description
+        }
+      }
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -70,10 +89,10 @@ async function run() {
 run().catch(console.dir);
 
 
-app.get('/', (req, res)=> {
-    res.send('job hustle website is running');
+app.get('/', (req, res) => {
+  res.send('job hustle website is running');
 })
 
-app.listen(port, ()=>{
-    console.log(`job hustle server is running on port: ${port}`);
+app.listen(port, () => {
+  console.log(`job hustle server is running on port: ${port}`);
 });
