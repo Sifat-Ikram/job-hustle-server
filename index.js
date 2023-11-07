@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 4321;
@@ -31,6 +32,14 @@ async function run() {
 
     const jobCollection = client.db('jobDB').collection('allJobs');
 
+    // auth related api
+    app.get('/jwt', async(req,res) =>{
+      const user = req.body;
+      console.log('user for token', user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res.send({token});
+    })
+
     app.post('/allJobs', async (req, res) => {
       const newJob = req.body;
       console.log(newJob);
@@ -60,7 +69,7 @@ async function run() {
 
     app.put('/allJobs/:id', async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
+      const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updatedJob = req.body;
       const job = {
@@ -76,6 +85,8 @@ async function run() {
           description: updatedJob.description
         }
       }
+      const result = await jobCollection.updateOne(filter, job, options);
+      res.send(result);
     })
 
     // Send a ping to confirm a successful connection
