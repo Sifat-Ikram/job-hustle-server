@@ -1,18 +1,16 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 4321;
 
 // Middleware
-app.use(cors({
-  origin: ['http://localhost:5173'],
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json());
-
+app.use(cookieParser());
 
 
 
@@ -35,25 +33,6 @@ async function run() {
 
     const jobCollection = client.db('jobDB').collection('allJobs');
 
-    // auth related api
-    app.post('/jwt', async(req,res) =>{
-      const user = req.body;
-      console.log('user for token', user);
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
-      res
-      .cookie('token', token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none'
-      })
-      .send({success: true});
-    })
-
-    app.post('/logOut', async(req, res)=>{
-      const user = req.body;
-      console.log('logging out', user);
-      res.clearCookie('token', {maxAge: 0}).send({success: true})
-    })
 
     app.post('/allJobs', async (req, res) => {
       const newJob = req.body;
